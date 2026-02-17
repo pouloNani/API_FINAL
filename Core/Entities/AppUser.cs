@@ -12,7 +12,7 @@ public class AppUser : IdentityUser
 
     
 
-    public UserRole Role {get;set;} = UserRole.client;
+    public UserRole Role {get;set;} 
 
 
 

@@ -26,8 +26,8 @@ public class RegisterDto
 
         [Required]
         [RegularExpression("^(client|admin|owner)$", ErrorMessage = "Role must be 'client', 'admin', or 'owner'")]
-        [EnumDataType(typeof(UserRole))]
-        public UserRole role {get;set;} = UserRole.client;
+        
+        public string role {get;set;} = string.Empty;
 
         public Address? address {get;set;}
         
