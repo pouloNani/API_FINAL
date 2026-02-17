@@ -1,0 +1,22 @@
+info:
+  name: changeRolebyEmail
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: https://localhost:6001/change-role
+  body:
+    type: json
+    data: |-
+      {
+        "email" :"owner@api.ba",
+        "role":"Admin"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

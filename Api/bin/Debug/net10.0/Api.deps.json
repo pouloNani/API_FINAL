@@ -9,6 +9,7 @@
       "Api/1.0.0": {
         "dependencies": {
           "Infrastructure": "1.0.0",
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "10.0.3",
           "Microsoft.EntityFrameworkCore": "10.0.3",
           "Microsoft.EntityFrameworkCore.Design": "10.0.3",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.3"

@@ -48,3 +48,7 @@ program.cs
 
 8. tables creés : AspNetRoles NetRoleClaims NetUserClaims NetUserLogins AspNetUserRoles AspNetUsers
                   AspNetUserTokens
+
+9./login?useCookies=true : httpOnly no js can access inside the cookie
+
+10. RegisterDto and Address, AppUser Extension

@@ -9,5 +9,26 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
 {
 
     
+    public DbSet<Address> Addresses { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        
+        
+        modelBuilder.Entity<Address>(entity =>
+        {
+            entity.HasKey(e => e.Id);  
+            
+            entity.Property(e => e.firstLine).IsRequired();
+            entity.Property(e => e.city).IsRequired();
+            entity.Property(e => e.state).IsRequired();
+            entity.Property(e => e.postalCode).IsRequired();
+            entity.Property(e => e.country).IsRequired();
+        });
+        
+       
+    }
+    
 
 }

@@ -1,0 +1,21 @@
+info:
+  name: UpdateUser
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: https://localhost:6001/update-user
+  body:
+    type: json
+    data: |-
+      {
+        "email":"owner@api.ba"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
