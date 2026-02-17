@@ -1,0 +1,15 @@
+info:
+  name: DeleteAllUsers
+  type: http
+  seq: 9
+
+http:
+  method: DELETE
+  url: https://localhost:6001/delete-all
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

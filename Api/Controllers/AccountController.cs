@@ -1,5 +1,6 @@
 
 
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Api.DTOs;
 using Api.DTOs.Account;
@@ -10,37 +11,52 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
+[Route("account")]
 public class AccountController(SignInManager<AppUser> signInManager) : ControllerBase
 {
 
     [HttpPost("register")]
     public async Task<ActionResult> Register(RegisterDto registerDto)
     {
-
         var user = new AppUser
         {
             FirstName = registerDto.firstName,
             LastName = registerDto.lastName,
             PhoneNumber = registerDto.phoneNumber,
             Email = registerDto.email,
+            UserName = registerDto.email, 
             Address = registerDto.address
-            
         };
 
-        var result = await signInManager.UserManager.CreateAsync(user,registerDto.Password);
-        
-        if(!result.Succeeded) return BadRequest(result.Errors);
+        var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
 
-        if (!string.IsNullOrEmpty(registerDto.role.ToString()))
-    {
-        var roleResult = await signInManager.UserManager.AddToRoleAsync(user, registerDto.role.ToString());
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        // Log pour vérifier ce qui arrive
+        Console.WriteLine($"Role reçu : '{registerDto.role}'");
+
+        var roleName = char.ToUpper(registerDto.role[0]) + registerDto.role.Substring(1).ToLower();
+
+        Console.WriteLine($"Role normalisé : '{roleName}'");
+
+        // Vérifie que le rôle existe en base avant d'assigner
+        var roleExists = await signInManager.UserManager.IsInRoleAsync(user, roleName);
+        Console.WriteLine($"Role existe déjà sur user : {roleExists}");
+
+        var roleResult = await signInManager.UserManager.AddToRoleAsync(user, roleName);
 
         if (!roleResult.Succeeded)
+        {
+            Console.WriteLine("Erreurs AddToRoleAsync :");
+            foreach (var error in roleResult.Errors)
+                Console.WriteLine($"  - {error.Code} : {error.Description}");
+
             return BadRequest(roleResult.Errors);
-    }
+        }
 
-        return Ok();
+        Console.WriteLine($"Rôle {roleName} assigné avec succès !");
 
+        return Ok(new { message = $"Utilisateur créé avec le rôle {roleName}." });
     }
 
     [HttpPost("login")]
@@ -110,7 +126,44 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
     });
 }
 
-    [Authorize("Admin")]
+
+    [HttpGet("get-user")]
+    [Authorize(Roles ="Admin")]
+    public async Task<IActionResult> GetUserByEmailOrId( GetUserDto dto)
+    {
+        
+        if(string.IsNullOrEmpty(dto.UserId) && string.IsNullOrEmpty(dto.Email))
+        return BadRequest(new { message = "Fournir un UserId ou un Email." });
+
+        AppUser? user = null;
+
+        if (!string.IsNullOrEmpty(dto.UserId))
+            user = await signInManager.UserManager.FindByIdAsync(dto.UserId);
+        else if (!string.IsNullOrEmpty(dto.Email))
+            user = await signInManager.UserManager.FindByEmailAsync(dto.Email);
+
+        if (user is null)
+            return NotFound(new { message = "Utilisateur introuvable." });
+
+        var roles = await signInManager.UserManager.GetRolesAsync(user);
+
+        return Ok(new
+        {
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Email,
+            user.PhoneNumber,
+            user.EmailConfirmed,
+            user.LockoutEnabled,
+            user.LockoutEnd,
+            user.Address,
+            Roles = roles
+        });
+
+    }
+
+    [Authorize(Roles ="Admin")]
     [HttpPut("change-role")]
     public async Task<ActionResult> ChangeRole(ChangeRoleDto dto)
     {
@@ -218,4 +271,97 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
     }
 
 
+    [Authorize(Roles="Admin")]
+    [HttpDelete("delete")]
+    public async Task<ActionResult> Delete( DeleteUserDto dto)
+    {
+    
+        AppUser? user = null;
+
+        if (dto.UserId != 0)
+            user = await signInManager.UserManager.FindByIdAsync(dto.UserId.ToString());
+        else if (!string.IsNullOrEmpty(dto.Email))
+            user = await signInManager.UserManager.FindByEmailAsync(dto.Email);
+
+        if (user is null)
+            return NotFound(new { message = "Utilisateur introuvable." });
+
+        
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (user.Id.ToString() != currentUserId && !isAdmin)
+            return Forbid();
+
+       
+        await signInManager.SignOutAsync();
+
+        var result = await signInManager.UserManager.DeleteAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description);
+            return BadRequest(new { message = "Échec de la suppression.", errors });
         }
+
+        return Ok(new { message = "Utilisateur supprimé avec succès." });
+    }
+        
+    
+    
+
+    [HttpDelete("delete-all")]
+    [Authorize(Roles ="Admin")]
+    public async Task<IActionResult> DeleteAllUsers()
+    {
+        var users = signInManager.UserManager.Users.ToList();
+
+        var errors = new List<string>();
+
+        foreach (var user in users)
+        {
+            var result = await signInManager.UserManager.DeleteAsync(user);
+            if (!result.Succeeded)
+                errors.AddRange(result.Errors.Select(e => e.Description));
+        }
+
+        // Déconnecte l'admin après suppression de son propre compte
+        await signInManager.SignOutAsync();
+
+        if (errors.Any())
+            return BadRequest(new { message = "Certains utilisateurs n'ont pas pu être supprimés.", errors });
+
+        return Ok(new { message = $"{users.Count} utilisateur(s) supprimé(s) avec succès." });
+    }
+
+        
+    [HttpGet("all")]
+    [Authorize(Roles ="Admin")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = signInManager.UserManager.Users.ToList();
+
+        var result = new List<object>();
+
+        foreach (var user in users)
+        {
+            var roles = await signInManager.UserManager.GetRolesAsync(user);
+
+            result.Add(new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.PhoneNumber,
+                user.EmailConfirmed,
+                user.LockoutEnabled,
+                user.LockoutEnd,
+                Roles = roles
+            });
+        }
+
+        return Ok(result);
+    }
+
+
+}

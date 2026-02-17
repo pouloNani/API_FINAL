@@ -23,7 +23,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     options.Password.RequireLowercase = true;
     options.User.RequireUniqueEmail = true;
 })
-.AddEntityFrameworkStores<StoreContext>();
+.AddEntityFrameworkStores<StoreContext>().AddDefaultTokenProviders();
 builder.Services.AddSingleton<IEmailSender<AppUser>, NoOpEmailSender>();
 
 
@@ -50,7 +50,6 @@ foreach (var role in roles)
 
 app.MapControllers();
 
-//For Idenity, Bellow MapControllers
-app.MapGroup("api").MapIdentityApi<AppUser>();
+
 
 app.Run();
