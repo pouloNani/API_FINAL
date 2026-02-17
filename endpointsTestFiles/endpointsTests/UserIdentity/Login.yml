@@ -1,0 +1,22 @@
+info:
+  name: Login
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://localhost:6001/login
+  body:
+    type: json
+    data: |-
+      {
+        "email" :"owner@api.ba",
+        "password":"Password@1"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
