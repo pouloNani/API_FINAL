@@ -1,0 +1,50 @@
+
+Setting up ASP.NET Identity
+Using thye UserManager & SignInMAnager
+Claims
+Extension Methods
+
+MapIdentityApi<TUser> adds following endpoints :
+
+        -register post
+        -login post
+        -refresh post
+        -confirmEmail get
+        -resendConfirmationEmail post
+        -forgotPassword post
+        -resetPassword post
+        -manage/2fa  post
+        -manage/info post&get
+
+
+The goal is to implement ASP.NET Identity to allow clients
+to login & register to our app and receive a Cookie
+which can be used to authenticate against certain class, methods in the API
+
+1. Ajouter les packages
+
+Identity.EntityFramework in : Infrastrucre
+Indentity.Stores in : Core
+
+Core/Entities
+2. public class AppUser : IdentityUser
+
+Infrastructe/Data
+3. public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
+
+program.cs
+4.  builder.Services.AddAuthorization();
+    builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<StoreContext>();
+    //Bellow MapControllers
+    app.MapIdentityApi<AppUser>();
+
+
+5. Make migrations $ dotnet ef migrations add IdentityAdded -s Api -p Intrastructure
+
+6. /Api $ dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+                     package Microsoft.EntityFrameworkCore.Design
+                     package Microsoft.EntityFrameworkCore
+7. Faire migrations et database update avec dotnet ef
+
+8. tables creés : AspNetRoles NetRoleClaims NetUserClaims NetUserLogins AspNetUserRoles AspNetUsers
+                  AspNetUserTokens

@@ -1,0 +1,14 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Password@123"
+    platform: linux/amd64
+    ports:
+      - "1435:1433"  # ← Port local 1435 → Port conteneur 1433
+    volumes:
+      - sqldata:/var/opt/mssql
+
+volumes:
+  sqldata:
