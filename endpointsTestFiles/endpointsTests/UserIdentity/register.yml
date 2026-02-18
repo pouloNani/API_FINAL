@@ -5,23 +5,23 @@ info:
 
 http:
   method: POST
-  url: https://localhost:6001/api/register
+  url: https://localhost:6001/account/register
   body:
     type: json
     data: |-
       {
-        "firstName": "Sophie",
-        "lastName": "Martin",
-        "phoneNumber": "+32476543210",
-        "email": "client@api.ba",
+        "firstName": "Thomas",
+        "lastName": "Leroy",
+        "phoneNumber": "+32498765432",
+        "email": "client2@api.be",
         "password": "Password@1",
         "confirmPassword": "Password@1",
         "role": "client",
         "address": {
-          "street": "Avenue Louise 234",
+          "street": "Boulevard Anspach 23",
           "city": "Bruxelles",
           "state": "Bruxelles-Capitale",
-          "postalCode": "1050",
+          "postalCode": "1000",
           "country": "Belgique"
         }
       }

@@ -5,12 +5,14 @@ info:
 
 http:
   method: PUT
-  url: https://localhost:6001/update-user
+  url: https://localhost:6001/account/update-user
   body:
     type: json
     data: |-
       {
-        "email":"owner@api.ba"
+        "targetEmail":"client1i@api.be",
+        "email":"client1@api.be",
+        "firstName" :"clientFirstName"
       }
   auth: inherit
 

@@ -6,16 +6,11 @@ namespace Core.Entities;
 public class Address
 {
     [Key]
-    public int Id;
-    public string firstLine { get; set; } = string.Empty;
-    public string? secondLine {get;set;}
-
-    public int postalCode {get;set;} = -1;
-
-    public string? city {get;set;}
-
-    public string? state {get;set;}
-
-    public string country {get;set;} = string.Empty;
-
+    public int Id { get; set; }
+    public string FirstLine { get; set; } = string.Empty;
+    public string? SecondLine { get; set; }
+    public int PostalCode { get; set; } = -1;
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string Country { get; set; } = string.Empty;
 }

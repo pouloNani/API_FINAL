@@ -6,6 +6,12 @@ info:
 http:
   method: DELETE
   url: https://localhost:6001/account/delete
+  body:
+    type: json
+    data: |-
+      {
+        "email":"client2@api.be"
+      }
   auth: inherit
 
 settings:

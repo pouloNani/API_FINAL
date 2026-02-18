@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: https://localhost:6001/logout
+  url: https://localhost:6001/account/logout
   auth: inherit
 
 settings:
