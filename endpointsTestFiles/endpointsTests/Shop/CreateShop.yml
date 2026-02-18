@@ -1,0 +1,33 @@
+info:
+  name: CreateShop
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost:6001/shops
+  body:
+    type: json
+    data: |2-
+        {
+          "name": "Librairie Lecomte",
+          "vatNumber": "BE0345678912",
+          "type": "Physical",
+          "status": "NotDefined",
+          "promoStrategy": "BestForClient",
+          "address": {
+            "firstLine": "Boulevard de la Sauvenière 8",
+            "secondLine": "Rez-de-chaussée",
+            "postalCode": "4000",
+            "city": "Liège",
+            "state": "Liège",
+            "country": "Belgium"
+          }
+        }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

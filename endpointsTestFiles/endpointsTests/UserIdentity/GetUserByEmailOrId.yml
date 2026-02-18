@@ -6,6 +6,12 @@ info:
 http:
   method: GET
   url: https://localhost:6001/account/get-user
+  body:
+    type: json
+    data: |-
+      {
+        "userid": "2719daae-b7f6-4257-9ade-0bd3290be406"
+      }
   auth: inherit
 
 settings:

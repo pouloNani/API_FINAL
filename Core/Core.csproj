@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
+    <Folder Include="DTOs\Shop\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="POCO\" />
   </ItemGroup>
 
 </Project>

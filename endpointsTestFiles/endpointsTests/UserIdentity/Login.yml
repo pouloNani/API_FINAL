@@ -5,12 +5,12 @@ info:
 
 http:
   method: POST
-  url: https://localhost:6001/login
+  url: https://localhost:6001/account/login
   body:
     type: json
     data: |-
       {
-        "email" :"owner@api.ba",
+        "email" :"admin@api.be",
         "password":"Password@1"
       }
   auth: inherit

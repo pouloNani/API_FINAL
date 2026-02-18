@@ -10,13 +10,11 @@ public class AppUser : IdentityUser
 
     public Address? Address {get;set;}
 
-    
-
     public UserRole Role {get;set;} 
 
+    public ICollection<Shop>? Shops { get; set; }
 
-
-    
+    public ICollection<ShopRating> Ratings { get; set; } = new List<ShopRating>();
 
 
 }
