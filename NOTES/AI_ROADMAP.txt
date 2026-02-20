@@ -1,0 +1,24 @@
+
+│
+├── Core/
+│   ├── DTOs/Agent/
+│   │   └── AgentDtos.cs               ← DTOs, enums, modèles LLM
+│   └── Interfaces/
+│       └── ILLMClient.cs              ← Interface commune tous providers
+│
+├── Infrastructure/
+│   └── AI/
+│       ├── AgentLoop.cs               ← Boucle agentique principale
+│       ├── ToolDefinitions.cs         ← Tous les outils disponibles pour l'IA
+│       ├── ToolExecutor.cs            ← Branchement sur tes repositories
+│       ├── LLMClientFactory.cs        ← Choisit le provider selon appsettings
+│       ├── JsonElementExtensions.cs   ← Helpers pour parser les args JSON
+│       └── Providers/
+│           ├── OllamaClient.cs        ← Provider Ollama (local)
+│           ├── MistralClient.cs       ← Provider Mistral
+│           ├── GeminiClient.cs        ← Provider Gemini
+│           └── ClaudeAIClient.cs      ← Provider Claude
+│
+└── Api/
+    └── Controllers/
+        └── AssistantController.cs     ← 2 endpoints: /chat et /confirm-action

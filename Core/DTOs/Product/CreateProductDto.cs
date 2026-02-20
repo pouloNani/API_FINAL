@@ -64,3 +64,17 @@ public class PriceHistoryDto
     public DateTime ChangedAt { get; set; }
     public int ProductId { get; set; }
 }
+
+public class ProductWithDistanceDto
+{
+    public int        Id          { get; set; }
+    public string     Name        { get; set; } = "";
+    public decimal    SellPrice   { get; set; }
+    public decimal    FinalPrice  { get; set; }
+    public string?    UnitOfPrice { get; set; }
+    public int        ShopId      { get; set; }
+    public string?    ShopName    { get; set; }
+    public ShopStatus ShopStatus  { get; set; }
+    public bool       ShopIsOpen  { get; set; }
+    public int        DistanceM   { get; set; }
+}

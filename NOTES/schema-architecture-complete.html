@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Complète — Shopping AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #070810;
+  --surface: #0d0e1a;
+  --surface2: #121320;
+  --border: #1c1d35;
+  --border2: #252640;
+
+  --blue:   #3b82f6;
+  --purple: #8b5cf6;
+  --green:  #10b981;
+  --orange: #f59e0b;
+  --red:    #ef4444;
+  --pink:   #ec4899;
+  --cyan:   #06b6d4;
+  --lime:   #84cc16;
+
+  --text:   #e2e4f0;
+  --muted:  #4a4d6a;
+  --faint:  #1e2035;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 80px;
+  overflow-x: hidden;
+}
+
+/* animated bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(59,130,246,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 30% at 80% 80%, rgba(139,92,246,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* dot grid */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page { position: relative; z-index: 1; }
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.header {
+  text-align: center;
+  padding: 56px 20px 40px;
+  border-bottom: 1px solid var(--border);
+}
+.header-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 14px;
+  opacity: 0.8;
+}
+.header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  background: linear-gradient(135deg, #e2e4f0 0%, #8b9fd4 50%, #5b6af0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+.header-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+.canvas {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+}
+
+/* ══════════════════════════════════════════
+   SECTION TITLES
+══════════════════════════════════════════ */
+.sec {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0;
+}
+.sec-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sec-tag::before, .sec-tag::after {
+  content: '';
+  width: 30px;
+  height: 1px;
+  background: var(--border2);
+}
+
+/* ══════════════════════════════════════════
+   ARROW CONNECTORS
+══════════════════════════════════════════ */
+.connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 0;
+}
+.connector-line {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, var(--border2), transparent);
+}
+.connector-arrow {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--border2);
+}
+.connector-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  margin-top: 5px;
+  letter-spacing: 0.08em;
+}
+
+.connector.c-blue .connector-line  { background: linear-gradient(to bottom, var(--blue), transparent); }
+.connector.c-blue .connector-arrow { border-top-color: var(--blue); }
+.connector.c-purple .connector-line  { background: linear-gradient(to bottom, var(--purple), transparent); }
+.connector.c-purple .connector-arrow { border-top-color: var(--purple); }
+.connector.c-green .connector-line  { background: linear-gradient(to bottom, var(--green), transparent); }
+.connector.c-green .connector-arrow { border-top-color: var(--green); }
+.connector.c-orange .connector-line  { background: linear-gradient(to bottom, var(--orange), transparent); }
+.connector.c-orange .connector-arrow { border-top-color: var(--orange); }
+
+/* ══════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 22px;
+  width: 100%;
+  max-width: 780px;
+  position: relative;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.card-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.card-badge {
+  margin-left: auto;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.52rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.card-body {
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.card-body strong { color: #9da8cc; font-weight: 500; }
+
+/* color variants */
+.v-blue   { border-color: rgba(59,130,246,0.25); }
+.v-blue   .card-icon { background: rgba(59,130,246,0.12); }
+.v-blue   .card-title { color: var(--blue); }
+.v-blue   .card-badge { background: rgba(59,130,246,0.12); color: var(--blue); }
+
+.v-purple { border-color: rgba(139,92,246,0.25); }
+.v-purple .card-icon { background: rgba(139,92,246,0.12); }
+.v-purple .card-title { color: var(--purple); }
+.v-purple .card-badge { background: rgba(139,92,246,0.12); color: var(--purple); }
+
+.v-green  { border-color: rgba(16,185,129,0.25); }
+.v-green  .card-icon { background: rgba(16,185,129,0.12); }
+.v-green  .card-title { color: var(--green); }
+.v-green  .card-badge { background: rgba(16,185,129,0.12); color: var(--green); }
+
+.v-orange { border-color: rgba(245,158,11,0.25); }
+.v-orange .card-icon { background: rgba(245,158,11,0.12); }
+.v-orange .card-title { color: var(--orange); }
+.v-orange .card-badge { background: rgba(245,158,11,0.12); color: var(--orange); }
+
+.v-red    { border-color: rgba(239,68,68,0.25); }
+.v-red    .card-icon { background: rgba(239,68,68,0.12); }
+.v-red    .card-title { color: var(--red); }
+.v-red    .card-badge { background: rgba(239,68,68,0.12); color: var(--red); }
+
+.v-pink   { border-color: rgba(236,72,153,0.25); }
+.v-pink   .card-icon { background: rgba(236,72,153,0.12); }
+.v-pink   .card-title { color: var(--pink); }
+.v-pink   .card-badge { background: rgba(236,72,153,0.12); color: var(--pink); }
+
+.v-cyan   { border-color: rgba(6,182,212,0.25); }
+.v-cyan   .card-icon { background: rgba(6,182,212,0.12); }
+.v-cyan   .card-title { color: var(--cyan); }
+.v-cyan   .card-badge { background: rgba(6,182,212,0.12); color: var(--cyan); }
+
+.v-lime   { border-color: rgba(132,204,22,0.25); }
+.v-lime   .card-icon { background: rgba(132,204,22,0.12); }
+.v-lime   .card-title { color: var(--lime); }
+.v-lime   .card-badge { background: rgba(132,204,22,0.12); color: var(--lime); }
+
+/* ══════════════════════════════════════════
+   GRID ITEMS
+══════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 780px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 780px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 780px; }
+
+.chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.18s;
+}
+.chip:hover { transform: translateY(-2px); }
+.chip-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.chip-desc { font-size: 0.58rem; color: var(--muted); line-height: 1.4; }
+
+/* provider chips */
+.prov { text-align: center; padding: 14px 10px; }
+.prov .chip-name { font-size: 0.7rem; margin-bottom: 4px; }
+.prov .chip-desc { font-size: 0.55rem; }
+
+/* ══════════════════════════════════════════
+   LOOP BOX
+══════════════════════════════════════════ */
+.loop {
+  background: var(--surface);
+  border: 1px dashed rgba(139,92,246,0.3);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 780px;
+  position: relative;
+}
+.loop-label {
+  position: absolute;
+  top: -10px; left: 20px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.loop-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.loop-step {
+  flex: 1;
+  text-align: center;
+  background: var(--faint);
+  border-radius: 10px;
+  padding: 12px 8px;
+}
+.loop-step-icon { font-size: 1.1rem; margin-bottom: 5px; }
+.loop-step-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--purple);
+  margin-bottom: 3px;
+}
+.loop-step-desc { font-size: 0.55rem; color: var(--muted); line-height: 1.4; }
+.loop-sep { color: rgba(139,92,246,0.3); font-size: 1rem; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════
+   FEEDBACK LOOP
+══════════════════════════════════════════ */
+.feedback-loop {
+  background: var(--surface);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 780px;
+  position: relative;
+}
+.feedback-loop-label {
+  position: absolute;
+  top: -10px; left: 20px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.fb-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.fb-step {
+  background: rgba(16,185,129,0.05);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+}
+.fb-step-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  color: var(--green);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.fb-step-label { font-size: 0.58rem; color: var(--muted); line-height: 1.4; }
+.fb-arrow { text-align: center; color: rgba(16,185,129,0.3); font-size: 1.2rem; }
+
+/* ══════════════════════════════════════════
+   AUTH FLOW
+══════════════════════════════════════════ */
+.auth-flow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 780px;
+}
+.auth-branch {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.auth-branch-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.auth-step {
+  font-size: 0.62rem;
+  color: var(--muted);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--faint);
+  line-height: 1.4;
+  display: flex;
+  gap: 8px;
+}
+.auth-step:last-child { border-bottom: none; }
+.auth-step-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--border2);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════
+   REDIS BOX
+══════════════════════════════════════════ */
+.redis-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 780px;
+}
+.redis-item {
+  background: var(--surface2);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 10px;
+  padding: 12px;
+}
+.redis-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.redis-val { font-size: 0.58rem; color: var(--muted); line-height: 1.4; }
+
+/* ══════════════════════════════════════════
+   RULE
+══════════════════════════════════════════ */
+.rule-box {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 12px;
+  padding: 14px 20px;
+  width: 100%;
+  max-width: 780px;
+  font-size: 0.68rem;
+  color: #9b6666;
+  line-height: 1.7;
+}
+.rule-box strong { color: var(--red); }
+
+/* ══════════════════════════════════════════
+   CONVERSATION EXAMPLE
+══════════════════════════════════════════ */
+.convo {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  width: 100%;
+  max-width: 780px;
+}
+.convo-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.msg { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+.msg-bubble {
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  max-width: 85%;
+}
+.msg-user .msg-bubble  { background: rgba(59,130,246,0.12); color: #93b4e8; margin-left: auto; }
+.msg-ai   .msg-bubble  { background: var(--faint); color: var(--muted); }
+.msg-tool .msg-bubble  { background: rgba(245,158,11,0.08); color: #a88a4a; font-family: 'Space Mono', monospace; font-size: 0.58rem; }
+.msg-user { flex-direction: row-reverse; }
+.msg-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-eyebrow">Documentation Architecture</div>
+    <h1>Shopping AI<br>Architecture Complète</h1>
+    <div class="header-sub">Conversation · Auth · Recherche géo · Feedback · Fine-tuning</div>
+  </div>
+
+  <div class="canvas">
+
+    <!-- ══════════════════════════════════════
+         1. CLIENT
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">01 — Point d'entrée</div>
+      <div class="card v-blue">
+        <div class="card-header">
+          <div class="card-icon">📱</div>
+          <div class="card-title">Client — Mobile / Web</div>
+          <div class="card-badge">Frontend</div>
+        </div>
+        <div class="card-body">
+          <strong>POST /assistant/chat</strong> → { message, latitude?, longitude?, cartId? }<br>
+          <strong>POST /assistant/voice</strong> → { audioFile, latitude?, longitude? } — transcrit via Whisper puis même pipeline<br>
+          <strong>POST /assistant/confirm-action</strong> → { actionType, payload } — seulement quand le client clique<br>
+          <strong>POST /assistant/feedback</strong> → { isPositive, comment? } — signal explicite pour le fine-tuning
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-blue">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+      <div class="connector-label">HTTP · JWT ou cookie guest</div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         2. CONTROLLER
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">02 — API Layer</div>
+      <div class="card v-purple">
+        <div class="card-header">
+          <div class="card-icon">⚙️</div>
+          <div class="card-title">AssistantController</div>
+          <div class="card-badge">Api/Controllers</div>
+        </div>
+        <div class="card-body">
+          Extrait <strong>userId</strong> (JWT → user connecté · cookie → guest)<br>
+          Injecte contexte : <strong>[UserId | GPS | Heure | CartId]</strong> dans le message<br>
+          Appelle <strong>AgentLoop.RunAsync()</strong> · sauvegarde échange dans <strong>AgentFeedback (MySQL)</strong><br>
+          Sur <strong>confirm-action</strong> → marque feedback positif + exécute CartService<br>
+          Sur <strong>feedback</strong> → met à jour FeedbackType (Positive / Negative / Correction)
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-purple">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+      <div class="connector-label">AgentLoop.RunAsync(request, userId)</div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         3. REDIS — MÉMOIRE
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">03 — Mémoire conversationnelle (Redis)</div>
+      <div class="redis-row">
+        <div class="redis-item">
+          <div class="redis-key">conversation:{userId}</div>
+          <div class="redis-val">Historique des 20 derniers messages · TTL 2h · rechargé à chaque tour</div>
+        </div>
+        <div class="redis-item">
+          <div class="redis-key">cart:{userId}:{cartId}</div>
+          <div class="redis-val">Panier Redis existant · TTL 30j · AddItemAsync()</div>
+        </div>
+        <div class="redis-item">
+          <div class="redis-key">cart:{userId}:list</div>
+          <div class="redis-val">Liste des cart IDs actifs · max 5 carts simultanés</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-purple">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+      <div class="connector-label">history + message → LLMClient</div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         4. PROVIDER SELECTION
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">04 — Sélection Provider (appsettings.json)</div>
+      <div class="grid-4" style="max-width:780px">
+        <div class="chip prov" style="border-color:rgba(74,222,128,0.2)">
+          <div class="chip-name" style="color:#4ade80">Ollama</div>
+          <div class="chip-desc">llama3.2<br>Local · Gratuit<br>llama3.2</div>
+        </div>
+        <div class="chip prov" style="border-color:rgba(251,113,133,0.2)">
+          <div class="chip-name" style="color:#fb7185">Mistral</div>
+          <div class="chip-desc">mistral-large<br>Cloud · Fine-tunable<br>⭐ Recommandé</div>
+        </div>
+        <div class="chip prov" style="border-color:rgba(96,165,250,0.2)">
+          <div class="chip-name" style="color:#60a5fa">Gemini</div>
+          <div class="chip-desc">gemini-1.5-flash<br>Cloud · Rapide</div>
+        </div>
+        <div class="chip prov" style="border-color:rgba(251,191,36,0.2)">
+          <div class="chip-name" style="color:#fbbf24">Claude</div>
+          <div class="chip-desc">claude-haiku<br>Cloud · Précis</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-purple">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         5. AGENT LOOP
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">05 — Boucle Agentique</div>
+      <div class="loop">
+        <div class="loop-label">AgentLoop · max 6 tours</div>
+        <div class="loop-steps">
+          <div class="loop-step">
+            <div class="loop-step-icon">📜</div>
+            <div class="loop-step-name">Contexte</div>
+            <div class="loop-step-desc">History Redis + nouveau message + system prompt</div>
+          </div>
+          <div class="loop-sep">→</div>
+          <div class="loop-step">
+            <div class="loop-step-icon">🧠</div>
+            <div class="loop-step-name">LLM pense</div>
+            <div class="loop-step-desc">Choisit quel(s) tool(s) appeler</div>
+          </div>
+          <div class="loop-sep">→</div>
+          <div class="loop-step">
+            <div class="loop-step-icon">⚡</div>
+            <div class="loop-step-name">Tool Call</div>
+            <div class="loop-step-desc">ToolExecutor appelle les services</div>
+          </div>
+          <div class="loop-sep">→</div>
+          <div class="loop-step">
+            <div class="loop-step-icon">📊</div>
+            <div class="loop-step-name">Données</div>
+            <div class="loop-step-desc">Résultat JSON renvoyé au LLM</div>
+          </div>
+          <div class="loop-sep">→</div>
+          <div class="loop-step">
+            <div class="loop-step-icon">✅</div>
+            <div class="loop-step-name">Réponse</div>
+            <div class="loop-step-desc">Message naturel + propose_actions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-orange">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+      <div class="connector-label">ToolExecutor.ExecuteAsync(tool, args)</div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         6. TOOLS
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">06 — Outils disponibles pour le LLM</div>
+      <div class="grid-3" style="max-width:780px">
+
+        <div style="grid-column:1/-1">
+          <div style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--blue);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">🔵 Shopping</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">search_products_nearby</div>
+          <div class="chip-desc">Produits par mot-clé + GPS · triés prix + distance · Haversine</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">search_shops</div>
+          <div class="chip-desc">Shops par nom / type / catégorie / status</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">get_open_shops</div>
+          <div class="chip-desc">Shops avec Status = Open uniquement</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">get_product_price</div>
+          <div class="chip-desc">Prix final avec PromoResolver appliqué</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">search_best_promotions</div>
+          <div class="chip-desc">Meilleures promos triées par économie</div>
+        </div>
+        <div class="chip" style="border-color:rgba(59,130,246,0.2)">
+          <div class="chip-name" style="color:var(--blue)">get_cart</div>
+          <div class="chip-desc">Contenu panier Redis actuel</div>
+        </div>
+
+        <div style="grid-column:1/-1;margin-top:6px">
+          <div style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--pink);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">🔴 Auth (nouveau)</div>
+        </div>
+        <div class="chip" style="border-color:rgba(236,72,153,0.2)">
+          <div class="chip-name" style="color:var(--pink)">register_user</div>
+          <div class="chip-desc">Collecte email + password en 2 messages · crée compte · retourne JWT</div>
+        </div>
+        <div class="chip" style="border-color:rgba(236,72,153,0.2)">
+          <div class="chip-name" style="color:var(--pink)">login_user</div>
+          <div class="chip-desc">Collecte email + password · vérifie · retourne JWT + role</div>
+        </div>
+        <div class="chip" style="border-color:rgba(236,72,153,0.2)">
+          <div class="chip-name" style="color:var(--pink)">get_profile</div>
+          <div class="chip-desc">Profil utilisateur connecté</div>
+        </div>
+
+        <div style="grid-column:1/-1;margin-top:6px">
+          <div style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--purple);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">🟣 Obligatoire</div>
+        </div>
+        <div class="chip" style="border-color:rgba(139,92,246,0.3);grid-column:1/3">
+          <div class="chip-name" style="color:var(--purple)">propose_actions ★</div>
+          <div class="chip-desc">TOUJOURS appelé après une recherche · génère les boutons cliquables · ne modifie jamais le panier</div>
+        </div>
+        <div class="chip" style="border-color:rgba(139,92,246,0.2)">
+          <div class="chip-name" style="color:var(--purple)">reset_conversation</div>
+          <div class="chip-desc">Vide l'historique Redis de la session</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="connector c-orange">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         7. REPOSITORIES
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">07 — Services & Repositories existants</div>
+      <div class="grid-3" style="max-width:780px">
+        <div class="chip" style="border-color:rgba(239,68,68,0.2)">
+          <div class="chip-name" style="color:var(--red)">IShopRepository</div>
+          <div class="chip-desc">GetShopsAsync(ShopParams)<br>GetOpenShopsNowAsync()<br>GetByIdAsync()</div>
+        </div>
+        <div class="chip" style="border-color:rgba(239,68,68,0.2)">
+          <div class="chip-name" style="color:var(--red)">IProductRepository</div>
+          <div class="chip-desc">GetProductsAsync(ProductParams)<br>GetProductWithDetailsAsync()<br>SearchNearbyAsync(lat,lng) ← nouveau</div>
+        </div>
+        <div class="chip" style="border-color:rgba(239,68,68,0.2)">
+          <div class="chip-name" style="color:var(--red)">ICartService</div>
+          <div class="chip-desc">GetAllCartsAsync()<br>CreateCartAsync()<br>AddItemAsync()</div>
+        </div>
+        <div class="chip" style="border-color:rgba(236,72,153,0.2)">
+          <div class="chip-name" style="color:var(--pink)">UserManager&lt;AppUser&gt;</div>
+          <div class="chip-desc">CreateAsync() · FindByEmailAsync()<br>AddToRoleAsync() ← register</div>
+        </div>
+        <div class="chip" style="border-color:rgba(236,72,153,0.2)">
+          <div class="chip-name" style="color:var(--pink)">SignInManager</div>
+          <div class="chip-desc">CheckPasswordSignInAsync()<br>← login</div>
+        </div>
+        <div class="chip" style="border-color:rgba(132,204,22,0.2)">
+          <div class="chip-name" style="color:var(--lime)">FeedbackService ← nouveau</div>
+          <div class="chip-desc">SaveExchangeAsync()<br>MarkLastExchangeAsync()<br>ExportTrainingDataAsync()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-blue">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+      <div class="connector-label">AgentResponse → Client</div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         8. AUTH FLOW DETAIL
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">08 — Flow Auth conversationnel (nouveau)</div>
+      <div class="auth-flow">
+        <div class="auth-branch" style="border-color:rgba(236,72,153,0.2)">
+          <div class="auth-branch-title" style="color:var(--pink)">🔐 Register</div>
+          <div class="auth-step"><span class="auth-step-num">01</span>User: "je veux m'inscrire"</div>
+          <div class="auth-step"><span class="auth-step-num">02</span>IA: "Quel est votre email ?"</div>
+          <div class="auth-step"><span class="auth-step-num">03</span>User: "test@gmail.com"</div>
+          <div class="auth-step"><span class="auth-step-num">04</span>IA: "Choisissez un mot de passe"</div>
+          <div class="auth-step"><span class="auth-step-num">05</span>User: "monpass123"</div>
+          <div class="auth-step"><span class="auth-step-num">06</span>IA → register_user(email, pass)</div>
+          <div class="auth-step"><span class="auth-step-num">07</span>IA: "✅ Compte créé ! Vous êtes connecté." + retourne JWT</div>
+        </div>
+        <div class="auth-branch" style="border-color:rgba(59,130,246,0.2)">
+          <div class="auth-branch-title" style="color:var(--blue)">🔑 Login</div>
+          <div class="auth-step"><span class="auth-step-num">01</span>User: "je veux me connecter"</div>
+          <div class="auth-step"><span class="auth-step-num">02</span>IA: "Votre email ?"</div>
+          <div class="auth-step"><span class="auth-step-num">03</span>User: "test@gmail.com"</div>
+          <div class="auth-step"><span class="auth-step-num">04</span>IA: "Votre mot de passe ?"</div>
+          <div class="auth-step"><span class="auth-step-num">05</span>User: "monpass123"</div>
+          <div class="auth-step"><span class="auth-step-num">06</span>IA → login_user(email, pass)</div>
+          <div class="auth-step"><span class="auth-step-num">07</span>IA: "Bienvenue ! 🎉" + JWT</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-green">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         9. CONFIRM FLOW
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">09 — Confirmation panier (jamais automatique)</div>
+      <div class="card v-orange">
+        <div class="card-header">
+          <div class="card-icon">🛒</div>
+          <div class="card-title">Confirm Action Flow</div>
+          <div class="card-badge">POST /confirm-action</div>
+        </div>
+        <div class="card-body">
+          IA propose → <strong>propose_actions[]</strong> avec boutons · client clique →
+          <strong>POST /confirm-action</strong> { actionType: "add_to_cart", payload: { productId, shopId, qty } }<br>
+          → Controller marque <strong>FeedbackType.ActionConfirmed</strong> · appelle <strong>CartService.AddItemAsync()</strong><br>
+          → Retourne { message: "✅ Produit ajouté !", cartId, total, itemCount }
+        </div>
+      </div>
+    </div>
+
+    <div class="connector c-green">
+      <div class="connector-line"></div>
+      <div class="connector-arrow"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         10. FEEDBACK + FINE-TUNING
+    ══════════════════════════════════════ -->
+    <div class="sec">
+      <div class="sec-tag">10 — Feedback Loop & Fine-tuning automatique (nouveau)</div>
+      <div class="feedback-loop">
+        <div class="feedback-loop-label">Cycle d'amélioration continue</div>
+        <div class="fb-steps">
+          <div class="fb-step">
+            <div class="fb-step-num">①</div>
+            <div class="fb-step-label">Échange sauvé<br>en MySQL<br><em>AgentFeedback</em></div>
+          </div>
+          <div class="fb-arrow">→</div>
+          <div class="fb-step">
+            <div class="fb-step-num">②</div>
+            <div class="fb-step-label">Feedback capturé<br>Confirmed /<br>Positive / Negative</div>
+          </div>
+          <div class="fb-arrow">→</div>
+          <div class="fb-step">
+            <div class="fb-step-num">③</div>
+            <div class="fb-step-label">Admin: stats<br>≥ 50 positifs<br>→ export JSONL</div>
+          </div>
+          <div class="fb-arrow">→</div>
+          <div class="fb-step">
+            <div class="fb-step-num">④</div>
+            <div class="fb-step-label">Fine-tune lancé<br>Mistral API<br>auto</div>
+          </div>
+          <div class="fb-arrow">→</div>
+          <div class="fb-step">
+            <div class="fb-step-num">⑤</div>
+            <div class="fb-step-label">appsettings<br>Model: ft:mistral<br>:job-id</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         11. CONVERSATION EXAMPLE
+    ══════════════════════════════════════ -->
+    <div style="height:20px"></div>
+    <div class="sec">
+      <div class="sec-tag">11 — Exemple conversation complète</div>
+      <div class="convo">
+        <div class="convo-title">// Session avec historique · GPS actif</div>
+        <div class="msg msg-user"><div class="msg-icon">👤</div><div class="msg-bubble">je cherche de la menthe pas loin de chez moi</div></div>
+        <div class="msg msg-tool"><div class="msg-icon">⚡</div><div class="msg-bubble">→ search_products_nearby("menthe", lat:50.65, lng:5.57)<br>→ 4 résultats · triés prix + distance</div></div>
+        <div class="msg msg-tool"><div class="msg-icon">⚡</div><div class="msg-bubble">→ propose_actions([ {label:"Ajouter", shop:"Épicerie Hassan 180m 0.80€"}, {label:"Ajouter", shop:"Superette 420m 0.65€"} ])</div></div>
+        <div class="msg msg-ai"><div class="msg-icon">🤖</div><div class="msg-bubble">J'ai trouvé de la menthe fraîche près de vous :<br>🥇 Superette Amine — 420m — <strong>0.65€</strong> le bouquet<br>🥈 Épicerie Hassan — 180m — 0.80€ le bouquet<br><br>La moins chère est à la Superette (420m). Voulez-vous l'ajouter au panier ?</div></div>
+        <div class="msg msg-user"><div class="msg-icon">👤</div><div class="msg-bubble">je veux me connecter d'abord</div></div>
+        <div class="msg msg-ai"><div class="msg-icon">🤖</div><div class="msg-bubble">Bien sûr ! Quel est votre email ?</div></div>
+        <div class="msg msg-user"><div class="msg-icon">👤</div><div class="msg-bubble">ahmed@gmail.com</div></div>
+        <div class="msg msg-ai"><div class="msg-icon">🤖</div><div class="msg-bubble">Votre mot de passe ?</div></div>
+        <div class="msg msg-user"><div class="msg-icon">👤</div><div class="msg-bubble">••••••••</div></div>
+        <div class="msg msg-tool"><div class="msg-icon">⚡</div><div class="msg-bubble">→ login_user("ahmed@gmail.com", "••••") → JWT retourné</div></div>
+        <div class="msg msg-ai"><div class="msg-icon">🤖</div><div class="msg-bubble">✅ Bienvenue Ahmed ! Vous êtes connecté.<br>Voulez-vous que j'ajoute la menthe de la Superette Amine au panier ?</div></div>
+        <div class="msg msg-user"><div class="msg-icon">👤</div><div class="msg-bubble"><em>[clique sur "Ajouter" — Superette Amine]</em></div></div>
+        <div class="msg msg-ai"><div class="msg-icon">🤖</div><div class="msg-bubble">🛒 Menthe fraîche ajoutée à votre panier ! (0.65€) · Total : 0.65€</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         RULE
+    ══════════════════════════════════════ -->
+    <div style="height:20px"></div>
+    <div class="sec">
+      <div class="rule-box">
+        <strong>⚠️ Règles absolues du système :</strong><br>
+        Le LLM n'appelle <strong>jamais add_to_cart</strong> directement — toujours <strong>propose_actions</strong> d'abord.<br>
+        L'auth collecte email et password <strong>en deux messages séparés</strong> (jamais ensemble).<br>
+        L'historique est <strong>limité à 20 messages</strong> pour ne pas dépasser le context window.<br>
+        Le fine-tuning ne se déclenche qu'avec <strong>≥ 50 exemples positifs confirmés</strong>.
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

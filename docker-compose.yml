@@ -18,6 +18,16 @@ services:
     volumes:
       - redisdata:/data
 
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
 volumes:
   sqldata:
   redisdata:
+  ollama_data:

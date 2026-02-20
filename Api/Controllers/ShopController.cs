@@ -8,23 +8,24 @@ using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Core.DTOs.Promotion;
+using Infrastructure.Services;
+using Core.Helpers;
 
 namespace Api.Controllers;
 
 [Route("shops")]
 public class ShopController(
-    IShopRepository shopRepository, 
-    IMapper mapper, 
+    IShopRepository        shopRepository,
+    IMapper                mapper,
     SignInManager<AppUser> signInManager,
-    UserManager<AppUser> userManager) : BaseApiController
+    UserManager<AppUser>   userManager,
+    GeocodingService       geocoding) : BaseApiController
 {
     private string? GetCurrentUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
     private string? GetEffectiveOwnerId(string? ownerId) =>
         User.IsInRole("Admin") ? ownerId : GetCurrentUserId();
 
-    // ───────────────────────────────────────────
-    // LECTURE
-    // ───────────────────────────────────────────
+    // ─── LECTURE ────────────────────────────────────────────────────
 
     [HttpGet]
     public async Task<ActionResult<PagedResult<ShopDto>>> GetAllShops([FromQuery] ShopParams p)
@@ -46,9 +47,7 @@ public class ShopController(
     public async Task<ActionResult<PagedResult<ShopDto>>> GetMyShops([FromQuery] PaginationParams p)
     {
         var ownerId = GetCurrentUserId();
-        if (string.IsNullOrEmpty(ownerId))
-            return Unauthorized("Utilisateur non identifié.");
-
+        if (string.IsNullOrEmpty(ownerId)) return Unauthorized("Utilisateur non identifié.");
         return Ok(await shopRepository.GetByOwnerIdAsync(ownerId, p));
     }
 
@@ -65,27 +64,25 @@ public class ShopController(
         if (shop is null) return NotFound("Shop introuvable.");
 
         var effectiveOwnerId = GetEffectiveOwnerId(ownerId);
-        if (string.IsNullOrEmpty(effectiveOwnerId))
-            return Unauthorized("Utilisateur non identifié.");
+        if (string.IsNullOrEmpty(effectiveOwnerId)) return Unauthorized("Utilisateur non identifié.");
         if (shop.OwnerId != effectiveOwnerId) return Forbidden();
 
         return Ok(shop);
     }
 
-    // ───────────────────────────────────────────
-    // CRUD
-    // ───────────────────────────────────────────
+    // ─── CRUD ────────────────────────────────────────────────────────
 
     [HttpPost]
     [Authorize(Roles = "Owner")]
     public async Task<ActionResult<ShopDto>> CreateShop(CreateShopDto dto)
     {
         var ownerId = GetCurrentUserId();
-        if (string.IsNullOrEmpty(ownerId))
-            return Unauthorized("Utilisateur non identifié.");
+        if (string.IsNullOrEmpty(ownerId)) return Unauthorized("Utilisateur non identifié.");
 
         var shop = mapper.Map<Shop>(dto);
         shop.OwnerId = ownerId;
+
+        await geocoding.GeocodeShopAddressAsync(shop);
 
         await shopRepository.AddAsync(shop);
         await shopRepository.SaveChangesAsync();
@@ -98,14 +95,15 @@ public class ShopController(
     public async Task<ActionResult<ShopDto>> CreateShopForOwner(CreateShopForOwnerDto dto)
     {
         var owner = await userManager.FindByIdAsync(dto.OwnerId);
-        if (owner == null)
-            return NotFound("User not found.");
+        if (owner == null) return NotFound("User not found.");
 
         var roles = await userManager.GetRolesAsync(owner);
-        if (!roles.Contains("Owner"))
-            return BadRequest("The specified user does not have the Owner role.");
+        if (!roles.Contains("Owner")) return BadRequest("The specified user does not have the Owner role.");
 
         var shop = mapper.Map<Shop>(dto);
+
+        await geocoding.GeocodeShopAddressAsync(shop);
+
         await shopRepository.AddAsync(shop);
         await shopRepository.SaveChangesAsync();
 
@@ -120,12 +118,13 @@ public class ShopController(
         if (shop is null) return NotFound("Shop introuvable.");
 
         var effectiveOwnerId = GetEffectiveOwnerId(dto.OwnerId);
-        if (string.IsNullOrEmpty(effectiveOwnerId))
-            return Unauthorized("Utilisateur non identifié.");
+        if (string.IsNullOrEmpty(effectiveOwnerId)) return Unauthorized("Utilisateur non identifié.");
         if (shop.OwnerId != effectiveOwnerId) return Forbidden();
 
         mapper.Map(dto, shop);
         shop.UpdatedAt = DateTime.UtcNow;
+
+        await geocoding.GeocodeShopAddressAsync(shop);
 
         await shopRepository.UpdateAsync(shop);
         await shopRepository.SaveChangesAsync();
@@ -141,8 +140,7 @@ public class ShopController(
         if (shop is null) return NotFound("Shop introuvable.");
 
         var effectiveOwnerId = GetEffectiveOwnerId(ownerId);
-        if (string.IsNullOrEmpty(effectiveOwnerId))
-            return Unauthorized("Utilisateur non identifié.");
+        if (string.IsNullOrEmpty(effectiveOwnerId)) return Unauthorized("Utilisateur non identifié.");
         if (shop.OwnerId != effectiveOwnerId) return Forbidden();
 
         await shopRepository.DeleteAsync(shop);
@@ -157,12 +155,7 @@ public class ShopController(
         var shop = await shopRepository.GetByIdAsync(id);
         if (shop is null) return NotFound("Shop introuvable.");
 
-        return Ok(new
-        {
-            shopId = shop.Id,
-            shopName = shop.Name,
-            promoStrategy = shop.PromoStrategy
-        });
+        return Ok(new { shopId = shop.Id, shopName = shop.Name, promoStrategy = shop.PromoStrategy });
     }
 
     [HttpPatch("{id:int}/promo-strategy")]
@@ -181,12 +174,6 @@ public class ShopController(
         await shopRepository.SaveChangesAsync();
 
         var after = await shopRepository.GetByIdAsync(id);
-
-        return Ok(new
-        {
-            before,
-            received = dto.Strategy,
-            after = after!.PromoStrategy
-        });
+        return Ok(new { before, received = dto.Strategy, after = after!.PromoStrategy });
     }
-    }
+}

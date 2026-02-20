@@ -12,6 +12,8 @@ public enum ProductSortBy
 public class ProductParams : PaginationParams
 {
     public string? Name { get; set; }
+    public double? Latitude  { get; set; }
+    public double? Longitude { get; set; }
     public string? Barcode { get; set; }
     public string? Search { get; set; }
     public int? ShopId { get; set; }

@@ -28,6 +28,8 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
             entity.Property(e => e.State).IsRequired();
             entity.Property(e => e.PostalCode).IsRequired();
             entity.Property(e => e.Country).IsRequired();
+            entity.Property(e => e.Latitude).IsRequired(false);
+            entity.Property(e => e.Longitude).IsRequired(false);
         });
 
         // Shop

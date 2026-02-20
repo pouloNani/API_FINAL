@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "+GuaYVLS9Uk=",
+  "dgSpecHash": "pUeXMqix7Sw=",
   "success": true,
   "projectFilePath": "C:\\Users\\oumar\\Desktop\\API_FINAL\\Infrastructure\\Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -11,6 +11,7 @@
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\10.0.3\\microsoft.aspnetcore.cryptography.internal.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.aspnetcore.cryptography.keyderivation\\10.0.3\\microsoft.aspnetcore.cryptography.keyderivation.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.aspnetcore.identity.entityframeworkcore\\10.0.3\\microsoft.aspnetcore.identity.entityframeworkcore.10.0.3.nupkg.sha512",
+    "C:\\Users\\oumar\\.nuget\\packages\\microsoft.aspnetcore.identity.ui\\10.0.3\\microsoft.aspnetcore.identity.ui.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\8.0.0\\microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.bcl.cryptography\\9.0.4\\microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.build.framework\\18.0.2\\microsoft.build.framework.18.0.2.nupkg.sha512",
@@ -38,6 +39,8 @@
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.3\\microsoft.extensions.dependencymodel.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.diagnostics\\10.0.3\\microsoft.extensions.diagnostics.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.3\\microsoft.extensions.diagnostics.abstractions.10.0.3.nupkg.sha512",
+    "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.3\\microsoft.extensions.fileproviders.abstractions.10.0.3.nupkg.sha512",
+    "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.fileproviders.embedded\\10.0.3\\microsoft.extensions.fileproviders.embedded.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.identity.core\\10.0.3\\microsoft.extensions.identity.core.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.identity.stores\\10.0.3\\microsoft.extensions.identity.stores.10.0.3.nupkg.sha512",
     "C:\\Users\\oumar\\.nuget\\packages\\microsoft.extensions.logging\\10.0.3\\microsoft.extensions.logging.10.0.3.nupkg.sha512",
