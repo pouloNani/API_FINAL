@@ -1,5 +1,7 @@
 # Secrets
 .env*
+**/appsettings.json
+**/appsettings.*.json
 
 # Dependencies
 node_modules
