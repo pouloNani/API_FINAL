@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Core.DTOs.Promotion;
 
 namespace Api.Controllers;
 
@@ -149,4 +150,43 @@ public class ShopController(
 
         return Ok(new { message = "Shop supprimé avec succès." });
     }
-}
+
+    [HttpGet("{id:int}/promo-strategy")]
+    public async Task<ActionResult> GetPromoStrategy(int id)
+    {
+        var shop = await shopRepository.GetByIdAsync(id);
+        if (shop is null) return NotFound("Shop introuvable.");
+
+        return Ok(new
+        {
+            shopId = shop.Id,
+            shopName = shop.Name,
+            promoStrategy = shop.PromoStrategy
+        });
+    }
+
+    [HttpPatch("{id:int}/promo-strategy")]
+    [Authorize(Roles = "Admin,Owner")]
+    public async Task<ActionResult> ChangePromoStrategy(int id, [FromBody] UpdatePromoStrategyDto dto)
+    {
+        var shop = await shopRepository.GetByIdAsync(id);
+        if (shop is null) return NotFound("Shop introuvable.");
+
+        if (!User.IsInRole("Admin") && shop.OwnerId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            return Forbid();
+
+        var before = shop.PromoStrategy;
+        shop.PromoStrategy = dto.Strategy;
+        await shopRepository.UpdateAsync(shop);
+        await shopRepository.SaveChangesAsync();
+
+        var after = await shopRepository.GetByIdAsync(id);
+
+        return Ok(new
+        {
+            before,
+            received = dto.Strategy,
+            after = after!.PromoStrategy
+        });
+    }
+    }

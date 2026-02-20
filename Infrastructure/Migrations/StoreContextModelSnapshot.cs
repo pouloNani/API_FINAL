@@ -144,6 +144,9 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("BillNumber")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -155,6 +158,42 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("GuestCity")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GuestCountry")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GuestEmail")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GuestFirstName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("GuestId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GuestLastName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("GuestPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("GuestStreet")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GuestZipCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("ShopId")
                         .HasColumnType("int");
 
@@ -165,9 +204,16 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("AppUserId");
+
                     b.HasIndex("ShopId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Bills");
                 });
@@ -325,8 +371,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("UnitOfPrice")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UnitOfVolume")
                         .IsRequired()
@@ -348,8 +393,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("ShopId");
 
@@ -458,6 +501,13 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -493,6 +543,8 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("OwnerId");
 
@@ -695,13 +747,24 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Bill", b =>
                 {
+                    b.HasOne("Core.Entities.AppUser", null)
+                        .WithMany("Bills")
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("Core.Entities.Shop", "Shop")
                         .WithMany("Bills")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Shop");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Entities.BillItem", b =>
@@ -767,18 +830,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Product", b =>
                 {
-                    b.HasOne("Core.Entities.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Core.Entities.Shop", "Shop")
                         .WithMany("Products")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Address");
 
                     b.Navigation("Shop");
                 });
@@ -813,8 +869,12 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.AppUser", "Owner")
+                    b.HasOne("Core.Entities.AppUser", null)
                         .WithMany("Shops")
+                        .HasForeignKey("AppUserId");
+
+                    b.HasOne("Core.Entities.AppUser", "Owner")
+                        .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -911,6 +971,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.AppUser", b =>
                 {
+                    b.Navigation("Bills");
+
                     b.Navigation("Ratings");
 
                     b.Navigation("Shops");

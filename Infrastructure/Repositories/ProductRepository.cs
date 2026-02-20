@@ -10,22 +10,21 @@ public class ProductRepository(StoreContext context) : GenericRepository<Product
 {
     private readonly StoreContext _context = context;
 
+    
     public async Task<PagedResult<Product>> GetProductsAsync(ProductParams p)
     {
         var now = DateTime.UtcNow;
         var query = _context.Products
             .Include(pr => pr.Promotions)
-            .Include(pr => pr.Address)
+            .Include(pr => pr.PriceHistories)
             .AsQueryable();
 
         if (p.ShopId.HasValue)
             query = query.Where(pr => pr.ShopId == p.ShopId.Value);
 
-        if (!string.IsNullOrEmpty(p.Name))
-            query = query.Where(pr => pr.Name.ToLower().Contains(p.Name.ToLower()));
-
-        if (!string.IsNullOrEmpty(p.Barcode))
-            query = query.Where(pr => pr.CodeBar == p.Barcode);
+        if (!string.IsNullOrEmpty(p.Search))
+        
+            query = query.Where(pr => pr.Name.ToLower().Contains(p.Search.ToLower()) || pr.CodeBar == p.Search);
 
         if (p.MinPrice.HasValue)
             query = query.Where(pr => pr.SellPrice >= p.MinPrice.Value);
@@ -63,7 +62,6 @@ public class ProductRepository(StoreContext context) : GenericRepository<Product
         await _context.Products
             .Include(p => p.Promotions)
             .Include(p => p.PriceHistories)
-            .Include(p => p.Address)
             .FirstOrDefaultAsync(p => p.Id == id);
 
     public async Task<IReadOnlyList<Product>> SearchByBarcodeAsync(string barcode) =>

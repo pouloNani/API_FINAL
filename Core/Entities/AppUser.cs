@@ -16,6 +16,9 @@ public class AppUser : IdentityUser
 
     public ICollection<ShopRating> Ratings { get; set; } = new List<ShopRating>();
 
+    public ICollection<Bill> Bills { get; set; } = new List<Bill>();
+    
+
 
 }
 

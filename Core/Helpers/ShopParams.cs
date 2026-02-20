@@ -9,6 +9,7 @@ public class ShopParams : PaginationParams
     public string? Country { get; set; }
     public string? Type { get; set; }
     public string? Status { get; set; }
+    public string? Category { get; set; }
 
     
 }

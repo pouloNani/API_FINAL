@@ -14,6 +14,10 @@ public class ShopRepository(StoreContext context, IMapper mapper) : GenericRepos
     private readonly StoreContext _context = context;
     private readonly IMapper _mapper = mapper;
 
+    public override async Task<Shop?> GetByIdAsync(int id) =>
+        await context.Set<Shop>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id);
     public async Task<PagedResult<ShopDto>> GetShopsAsync(ShopParams p)
     {
         var query = _context.Shops
@@ -102,6 +106,8 @@ public class ShopRepository(StoreContext context, IMapper mapper) : GenericRepos
             query = query.Where(s => s.Status == status);
         if (!string.IsNullOrEmpty(p.Type) && Enum.TryParse<ShopType>(p.Type, out var type))
             query = query.Where(s => s.Type == type);
+        if (!string.IsNullOrEmpty(p.Category) && Enum.TryParse<ShopCategory>(p.Category, out var category))
+            query = query.Where(s => s.Category == category);
         
 
         return query;

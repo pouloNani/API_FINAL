@@ -9,35 +9,14 @@ public class PromotionRepository(StoreContext context) : GenericRepository<Promo
 {
     private readonly StoreContext _context = context;
 
-    public async Task<IReadOnlyList<Promotion>> GetByProductIdAsync(int productId) =>
+    public async Task<IReadOnlyList<Promotion>> GetByShopIdAsync(int shopId) =>
+    await _context.Promotions
+        .Where(p => p.ShopId == shopId)
+        .ToListAsync();
+
+    public async Task<Promotion?> GetPromotionWithProductsAsync(int id) =>
         await _context.Promotions
             .Include(p => p.Products)
-            .Where(p => p.Products.Any(pr => pr.Id == productId))
-            .ToListAsync();
-
-    public async Task<IReadOnlyList<Promotion>> GetActivePromotionsAsync()
-    {
-        var now = DateTime.UtcNow;
-        return await _context.Promotions
-            .Include(p => p.Products)
-            .Where(p => p.IsActive &&
-                        p.StartDate <= now &&
-                        p.EndDate >= now)
-            .ToListAsync();
+            .FirstOrDefaultAsync(p => p.Id == id);
+            
     }
-
-    public async Task<IReadOnlyList<Promotion>> GetByTypeAsync(PromoType type) =>
-        await _context.Promotions
-            .Include(p => p.Products)
-            .Where(p => p.Type == type)
-            .ToListAsync();
-
-    public async Task<IReadOnlyList<Promotion>> GetExpiredPromotionsAsync()
-    {
-        var now = DateTime.UtcNow;
-        return await _context.Promotions
-            .Include(p => p.Products)
-            .Where(p => p.EndDate < now)
-            .ToListAsync();
-    }
-}

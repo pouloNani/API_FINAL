@@ -8,6 +8,8 @@ using Infrastructure.Repositories;
 using AutoMapper;
 using System.Text.Json.Serialization;
 using Core.POCO;
+using StackExchange.Redis;
+using Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,11 @@ builder.Services.AddControllers()
 builder.Services.AddDbContext<StoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//Redis
+builder.Services.AddScoped<ICartService, CartService>();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis"]!));
 //For Indentity
 builder.Services.AddAuthorization();
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -59,6 +66,7 @@ builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
 builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<IShopRepository, ShopRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 ;
 
@@ -71,8 +79,6 @@ var app = builder.Build();
 
 //Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseAuthentication(); 
-app.UseAuthorization();
 app.UseStatusCodePages(async context =>
 {
     var response = context.HttpContext.Response;
@@ -82,6 +88,9 @@ app.UseStatusCodePages(async context =>
         await response.WriteAsJsonAsync(new AppError(404, "Oups, pas par là !"));
     }
 });
+
+app.UseAuthentication(); 
+app.UseAuthorization();
 
 // Role Manager
 var scope = app.Services.CreateScope();

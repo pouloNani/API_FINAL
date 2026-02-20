@@ -1,0 +1,15 @@
+info:
+  name: OwnerAddProduct
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost:6001/products/shop/2
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

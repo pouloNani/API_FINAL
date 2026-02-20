@@ -11,6 +11,23 @@ public enum PromoStrategy
     FirstStarted,     // La première qui commence
     Cumulative        // Toutes s'accumulent
 }
+
+public enum ShopCategory
+{
+    Alimentaire,
+    Boucherie,
+    Boulangerie,
+    Poissonnerie,
+    Mode,
+    Multimedia,
+    Electromenager,
+    Bricolage,
+    Enfants,
+    Coiffure,
+    RestoBarCafe,
+    Art,
+    Autre
+}
 public class Shop
 {
 
@@ -37,6 +54,8 @@ public class Shop
     public ICollection<ShopRating> Ratings { get; set; } = new List<ShopRating>();
 
     public ICollection<Picture> Pictures { get; set; } = new List<Picture>();
+
+    public ShopCategory Category { get; set; } = ShopCategory.Autre;
 
 
 

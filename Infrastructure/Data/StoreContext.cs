@@ -39,9 +39,11 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
             entity.Property(e => e.Status).HasConversion<string>();
             entity.Property(e => e.Type).HasConversion<string>();
             entity.Property(e => e.PromoStrategy).HasConversion<string>();
+            entity.Property(e => e.Category).HasConversion<string>();
 
+            // ← WithMany() sans navigation property sur AppUser
             entity.HasOne(s => s.Owner)
-                  .WithMany(u => u.Shops)
+                  .WithMany()
                   .HasForeignKey(s => s.OwnerId)
                   .OnDelete(DeleteBehavior.Cascade);
 
@@ -70,20 +72,17 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
             entity.Property(e => e.SellPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.BuyPrice).HasColumnType("decimal(18,2)");
-            entity.Property(e => e.UnitOfPrice).HasMaxLength(20);
             entity.Property(e => e.UnitOfVolume).HasMaxLength(20);
             entity.Property(e => e.UnitOfWeight).HasMaxLength(20);
             entity.Property(e => e.CodeBar).HasMaxLength(50);
+            entity.Property(e => e.UnitOfPrice).HasConversion<string>();
+            entity.Property(e => e.UnitOfVolume).HasConversion<string>();
+            entity.Property(e => e.UnitOfWeight).HasConversion<string>();
 
             entity.HasOne(p => p.Shop)
                   .WithMany(s => s.Products)
                   .HasForeignKey(p => p.ShopId)
                   .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(p => p.Address)
-                  .WithMany()
-                  .HasForeignKey(p => p.AddressId)
-                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Promotion
@@ -142,6 +141,24 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
             entity.Ignore(e => e.TotalBeforeDiscount);
             entity.Ignore(e => e.AppliedPromotions);
 
+            // Infos guest
+            entity.Property(e => e.GuestId).HasMaxLength(100);
+            entity.Property(e => e.GuestEmail).HasMaxLength(100);
+            entity.Property(e => e.GuestFirstName).HasMaxLength(50);
+            entity.Property(e => e.GuestLastName).HasMaxLength(50);
+            entity.Property(e => e.GuestPhone).HasMaxLength(20);
+            entity.Property(e => e.GuestStreet).HasMaxLength(200);
+            entity.Property(e => e.GuestCity).HasMaxLength(100);
+            entity.Property(e => e.GuestZipCode).HasMaxLength(20);
+            entity.Property(e => e.GuestCountry).HasMaxLength(100);
+
+            // User nullable (guest n'a pas de compte)
+            entity.HasOne(b => b.User)
+                  .WithMany()
+                  .HasForeignKey(b => b.UserId)
+                  .OnDelete(DeleteBehavior.NoAction)
+                  .IsRequired(false);
+
             entity.HasOne(b => b.Shop)
                   .WithMany(s => s.Bills)
                   .HasForeignKey(b => b.ShopId)
@@ -184,9 +201,9 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
             .HasOne(r => r.Shop)
             .WithMany(s => s.Ratings)
             .HasForeignKey(r => r.ShopId)
-            .OnDelete(DeleteBehavior.NoAction); // ← coupe le cycle
+            .OnDelete(DeleteBehavior.NoAction);
 
-        // Picture — tout en NoAction, géré dans SaveChangesAsync
+        // Picture
         modelBuilder.Entity<Picture>()
             .HasOne(p => p.Shop)
             .WithMany(s => s.Pictures)
@@ -222,13 +239,11 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
 
         if (deletedShopIds.Any())
         {
-            // Pictures du shop
             var shopPictures = await Set<Picture>()
                 .Where(p => p.ShopId.HasValue && deletedShopIds.Contains(p.ShopId.Value))
                 .ToListAsync(ct);
             Set<Picture>().RemoveRange(shopPictures);
 
-            // ShopRatings du shop (avec leurs pictures)
             var ratings = await Set<ShopRating>()
                 .Where(r => deletedShopIds.Contains(r.ShopId))
                 .ToListAsync(ct);

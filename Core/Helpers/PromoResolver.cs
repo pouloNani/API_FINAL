@@ -35,10 +35,10 @@ public static class PromoResolver
                 .First(),
 
             PromoStrategy.Cumulative => (
-                null,  // plusieurs promos, pas de FK unique
+                null,
                 activePromos.Aggregate(
                     product.SellPrice * quantity,
-                    (price, promo) => promo.GetFinalPrice(product.SellPrice, quantity))
+                    (price, promo) => promo.GetFinalPrice(price / quantity, quantity))
             ),
 
             _ => (null, product.SellPrice * quantity)

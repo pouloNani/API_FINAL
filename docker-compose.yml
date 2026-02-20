@@ -3,12 +3,21 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Password@123"
+      MSSQL_SA_PASSWORD: ${DBS_PASSWORD}
     platform: linux/amd64
     ports:
-      - "1435:1433"  # ← Port local 1435 → Port conteneur 1433
+      - "1435:1433"
     volumes:
       - sqldata:/var/opt/mssql
 
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass ${DBS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
 volumes:
   sqldata:
+  redisdata:

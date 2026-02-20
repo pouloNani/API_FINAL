@@ -11,3 +11,5 @@ C:\Users\oumar\Desktop\API_FINAL\Core\obj\Debug\net10.0\Core.dll
 C:\Users\oumar\Desktop\API_FINAL\Core\obj\Debug\net10.0\refint\Core.dll
 C:\Users\oumar\Desktop\API_FINAL\Core\obj\Debug\net10.0\Core.pdb
 C:\Users\oumar\Desktop\API_FINAL\Core\obj\Debug\net10.0\ref\Core.dll
+C:\Users\oumar\Desktop\API_FINAL\Core\bin\Debug\net10.0\Core.runtimeconfig.json
+C:\Users\oumar\Desktop\API_FINAL\Core\obj\Debug\net10.0\Core.genruntimeconfig.cache

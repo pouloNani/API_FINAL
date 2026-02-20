@@ -9,11 +9,16 @@ public class ScheduleRepository(StoreContext context) : GenericRepository<Schedu
 {
     private readonly StoreContext _context = context;
 
-    public async Task<IReadOnlyList<Schedule>> GetByShopIdAsync(int shopId) =>
-        await _context.Schedules
+    public async Task<IReadOnlyList<Schedule>> GetByShopIdAsync(int shopId)
+    {
+        var schedules = await _context.Schedules
             .Where(s => s.ShopId == shopId)
-            .OrderBy(s => s.Day)
             .ToListAsync();
+
+        return schedules
+            .OrderBy(s => s.Day == DayOfWeek.Sunday ? 7 : (int)s.Day)
+            .ToList();
+    }
 
     public async Task<Schedule?> GetByShopAndDayAsync(int shopId, DayOfWeek day) =>
         await _context.Schedules
