@@ -1,0 +1,15 @@
+info:
+  name: getpromotions
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: https://localhost:6001/promotions
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,15 @@
+info:
+  name: CreatePromoOnProduct
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: https://localhost:6001/products/1/promotions/create
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

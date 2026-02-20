@@ -3,6 +3,9 @@ using System.Reflection.Metadata;
 
 namespace Core.Entities;
 
+public enum UnitOfPrice{ kg,mg,g,l,ml,unit }
+public enum UnitOfWeight{ kg,mg,g}
+public enum UnitOfVolume {l,ml,cl}
 public class Product
 {
     public int Id { get; set; }
@@ -10,16 +13,16 @@ public class Product
     public string Description { get; set; } = string.Empty;
     public decimal SellPrice { get; set; }
 
-    public string UnitOfPrice {get;set;} = String.Empty;
+    public UnitOfPrice UnitOfPrice {get;set;} = UnitOfPrice.unit;
     public string  CodeBar {get;set;} = string.Empty;
 
     public int Volume {get;set;}
 
-    public string UnitOfVolume {get;set;} = string.Empty;
+    public UnitOfVolume UnitOfVolume {get;set;} = UnitOfVolume.l;
 
     public int Weight {get;set;}
 
-    public string UnitOfWeight = string.Empty;
+    public UnitOfWeight UnitOfWeight = UnitOfWeight.g;
 
     public ICollection<PriceHistory> PriceHistories { get; set; } = 
         new List<PriceHistory>(); 
@@ -31,7 +34,7 @@ public class Product
 
 
     public int? AddressId { get; set; }
-    public Address? Address { get; set; }
+  
 
     public int ShopId { get; set; }
     public Shop Shop { get; set; } = null!;

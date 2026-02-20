@@ -12,6 +12,7 @@ public class ShopDto
     public string VatNumber { get; set; } = string.Empty;
     public ShopType Type { get; set; }
     public ShopStatus Status { get; set; }
+    public ShopCategory Category { get; set; } = ShopCategory.Autre;
     public PromoStrategy PromoStrategy { get; set; }
     public string OwnerId { get; set; } = string.Empty;
     public AddressDto? Address { get; set; }
@@ -36,6 +37,9 @@ public class CreateShopDto
 
     [Required]
     public AddressDto Address { get; set; } = null!;
+
+    [Required]
+    public ShopCategory Category { get; set; } = ShopCategory.Autre;
 }
 
 public class CreateShopForOwnerDto : CreateShopDto
@@ -58,4 +62,5 @@ public class UpdateShopDto
     public ShopStatus? Status { get; set; }
     public PromoStrategy? PromoStrategy { get; set; }
     public AddressDto? Address { get; set; }
+    public ShopCategory? Category { get; set; } = ShopCategory.Autre;
 }

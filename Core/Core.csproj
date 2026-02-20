@@ -7,12 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DTOs\Cart\" />
+    <Folder Include="DTOs\Promotion\" />
+    <Folder Include="DTOs\Schedule\" />
     <Folder Include="DTOs\Shop\" />
     <Folder Include="Interfaces\" />
+    <Folder Include="Models\" />
     <Folder Include="POCO\" />
   </ItemGroup>
 

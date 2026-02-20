@@ -6,7 +6,7 @@ namespace Infrastructure.Repositories;
 
 public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : class
 {
-    public async Task<T?> GetByIdAsync(int id) =>
+    public virtual async Task<T?> GetByIdAsync(int id) =>
         await context.Set<T>().FindAsync(id);
 
     public async Task<IReadOnlyList<T>> GetAllAsync() =>

@@ -13,6 +13,7 @@ public class ProductParams : PaginationParams
 {
     public string? Name { get; set; }
     public string? Barcode { get; set; }
+    public string? Search { get; set; }
     public int? ShopId { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }

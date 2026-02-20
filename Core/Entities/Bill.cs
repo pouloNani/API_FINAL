@@ -11,6 +11,10 @@ public class Bill
 {
     public int Id { get; set; }
 
+    // Relation avec User (celui qui a validé le cart)
+    public string? UserId { get; set; } = string.Empty;
+    public AppUser User { get; set; } = null!;
+
     public string BillNumber { get; set; } = string.Empty;
 
     public DateTime BilledAt { get; set; } = DateTime.UtcNow;
@@ -38,4 +42,20 @@ public class Bill
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+
+    // Pour Guest User
+
+    public string? GuestId { get; set; }
+
+    public string? GuestEmail { get; set; }
+    public string? GuestFirstName { get; set; }
+    public string? GuestLastName { get; set; }
+    public string? GuestPhone { get; set; }
+
+    // Adresse 
+    public string? GuestStreet { get; set; }
+    public string? GuestCity { get; set; }
+    public string? GuestZipCode { get; set; }
+    public string? GuestCountry { get; set; }
 }
